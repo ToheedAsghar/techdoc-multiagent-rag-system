@@ -1,28 +1,35 @@
 """
 LLM Client
-The service provides an interface to the GPT.
+The service provides an interface to Google Gemini.
 """
 
-from optparse import Option
-import time
 import json
-from openai import OpenAI
+import re
+import google.generativeai as genai
 from backend.config import settings
 from typing import Optional, Dict, Any
 
 class LLMClient:
     """
-    Wrapper for API calls.
-    provides both sync and async methods.
+    Wrapper for Gemini API calls.
+    Provides both sync and async methods.
     """
 
     def __init__(self):
-        self.client = OpenAI(api_key=settings.OPENROUTER_API_KEY)
-        self.async_client = AsyncOpenAI(api_key=settings.OPENROUTER_API_KEY)
-        self.model = settings.OPENAI_MODEL
-        self.temperature = settings.OPENAI_TEMPERATURE
-        self.max_tokens = settings.OPENAI_MAX_TOKENS
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.model_name = settings.GEMINI_MODEL
+        self.temperature = settings.GEMINI_TEMPERATURE
+        self.max_tokens = settings.GEMINI_MAX_TOKENS
         self.total_tokens_used = 0
+
+        # Create the model
+        self.model = genai.GenerativeModel(
+            model_name=self.model_name,
+            generation_config={
+                "temperature": self.temperature,
+                "max_output_tokens": self.max_tokens,
+            }
+        )
 
     def generate(
         self, 
@@ -32,37 +39,37 @@ class LLMClient:
         json_mode: bool = False
     ) -> str:
         """
-        syncrhonous text generation.
+        Synchronous text generation.
         """
-        messages = []
-
+        # Build the full prompt with system instruction
+        full_prompt = ""
         if system_prompt:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": system_prompt
-                }
-            )
+            full_prompt = f"{system_prompt}\n\n"
+        full_prompt += prompt
 
-        messages.append(
-            {
-                "role": "user",
-                "content": prompt
-            }
-        )
+        if json_mode:
+            full_prompt += "\n\nRespond with valid JSON only."
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=temperature or self.temperature,
-                max_tokens=self.max_tokens,
-                response_format={"type":"json_object"} if json_mode else {"type": "text"}
-            )
+            # Create a model with custom temperature if provided
+            if temperature is not None:
+                model = genai.GenerativeModel(
+                    model_name=self.model_name,
+                    generation_config={
+                        "temperature": temperature,
+                        "max_output_tokens": self.max_tokens,
+                    }
+                )
+            else:
+                model = self.model
 
-            self.total_tokens_used += response.usages.total_tokens
+            response = model.generate_content(full_prompt)
+            
+            # Track token usage if available
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                self.total_tokens_used += getattr(response.usage_metadata, 'total_token_count', 0)
 
-            return response.choices[0].message.content
+            return response.text
         except Exception as e:
             print(f"[LLM ERROR]\t{str(e)}")
             raise
@@ -75,39 +82,39 @@ class LLMClient:
         json_mode: bool = False
     ) -> str:
         """
-        asyncrhonous version of generate for used in FASTAPI
+        Asynchronous version of generate for use in FastAPI.
         
         Same parameters as generate, but returns a coroutine.
         """
-        messages = []
-
+        # Build the full prompt with system instruction
+        full_prompt = ""
         if system_prompt:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": system_prompt
-                }
-            )
+            full_prompt = f"{system_prompt}\n\n"
+        full_prompt += prompt
 
-        messages.append(
-            {
-                "role": "user",
-                "content": prompt
-            }
-        )
+        if json_mode:
+            full_prompt += "\n\nRespond with valid JSON only."
 
         try:
-            response = await self.async_client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=temperature or self.temperature,
-                max_tokens=self.max_tokens,
-                response_format={"type":"json_object"} if json_mode else {"type": "text"}
-            )
+            # Create a model with custom temperature if provided
+            if temperature is not None:
+                model = genai.GenerativeModel(
+                    model_name=self.model_name,
+                    generation_config={
+                        "temperature": temperature,
+                        "max_output_tokens": self.max_tokens,
+                    }
+                )
+            else:
+                model = self.model
 
-            self.total_tokens_used += response.usages.total_tokens
+            response = await model.generate_content_async(full_prompt)
+            
+            # Track token usage if available
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                self.total_tokens_used += getattr(response.usage_metadata, 'total_token_count', 0)
 
-            return response.choices[0].message.content
+            return response.text
         except Exception as e:
             print(f"[LLM ERROR]\t{str(e)}")
             raise
@@ -118,12 +125,12 @@ class LLMClient:
         system_prompt: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Generate and parse json response.
+        Generate and parse JSON response.
         Example:
             res = llm.generate_json("Classify this query: What is AI?")
             It returns:
                 {
-                    "Query_type": "simple",
+                    "query_type": "simple",
                     "confidence": 0.95
                 }
         """
@@ -137,10 +144,19 @@ class LLMClient:
         )
 
         try:
-            return json.loads(response)
+            # Clean up response - remove markdown code blocks if present
+            cleaned = response.strip()
+            if cleaned.startswith("```json"):
+                cleaned = cleaned[7:]
+            if cleaned.startswith("```"):
+                cleaned = cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+            
+            return json.loads(cleaned)
         except json.JSONDecodeError:
             # FALLBACK: try to extract json from response
-            import re
             json_match = re.search(r'\{.*\}', response, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())
@@ -164,10 +180,19 @@ class LLMClient:
         )
 
         try:
-            return json.loads(response)
+            # Clean up response - remove markdown code blocks if present
+            cleaned = response.strip()
+            if cleaned.startswith("```json"):
+                cleaned = cleaned[7:]
+            if cleaned.startswith("```"):
+                cleaned = cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+            
+            return json.loads(cleaned)
         except json.JSONDecodeError:
             # FALLBACK: try to extract json from response
-            import re
             json_match = re.search(r'\{.*\}', response, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())

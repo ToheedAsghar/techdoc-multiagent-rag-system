@@ -4,7 +4,6 @@ ANALYSIS AGENT
 JOB: Read all Retrieved Documents and Write a Coherent answer.
 """
 
-from nt import system
 import time
 from tokenize import TokenError
 from typing import Dict
@@ -28,9 +27,9 @@ def analyze_and_synthesize(state: GraphState) -> Dict:
     query = state["query"]
     chunks = state.get("retrieved_chunks", [])
 
-    print(f"\m{'='*60}")
+    print(f"\n{'='*60}")
     print(f"Analysis Agent")
-    print(f"\m{'='*60}")
+    print(f"{'='*60}")
 
     print(f"[INFO]\tAnalyzing {len(chunks)} documents for query: {query[:50]}...")
 

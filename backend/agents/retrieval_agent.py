@@ -25,9 +25,9 @@ def retrieve_documents(state: GraphState) -> Dict:
     query_type = state["query_type"]
     retry_cnt = state["retry_cnt"]
 
-    print(f"\m{'='*60}")
+    print(f"\n{'='*60}")
     print(f"Retrieval Agent")
-    print(f"\m{'='*60}")
+    print(f"{'='*60}")
 
     top_k_map = {
         "simple_lookup": settings.TOP_K_SIMPLE,

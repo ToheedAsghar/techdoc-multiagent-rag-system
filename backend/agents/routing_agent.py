@@ -18,9 +18,9 @@ def router_query(state: GraphState) -> Dict:
 
     query = state["query"]
     
-    print(f"\m{'='*60}")
+    print(f"\n{'='*60}")
     print(f"Routing Agent")
-    print(f"\m{'='*60}")
+    print(f"{'='*60}")
 
     system_prompt = """You are an expert Query Classifier for a RAG system. Your Job is to analyze queries and classify their complexity"""
     user_prompt = f"""

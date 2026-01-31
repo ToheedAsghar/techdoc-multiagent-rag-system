@@ -24,17 +24,17 @@ def validate_answer(state: GraphState) -> Dict:
     6. Return validation results
     """
 
-    answer = state["synthesized_answer"]
-    chunks = state["retrieved_chunks"]
-    query = state["query"]
-    retry_cnt = state["retry_cnt"]
+    answer = state.get("synthesized_answer", "")
+    chunks = state.get("retrieved_chunks", [])
+    query = state.get("query", "")
+    retry_cnt = state.get("retry_cnt", 0)
 
-    print(f"\m{'='*60}")
+    print(f"\n{'='*60}")
     print(f"Validation Agent")
-    print(f"\m{'='*60}")
+    print(f"{'='*60}")
 
-    print(f"[INFO]\tValidating answer {len(answer)} characters")
-    print(f"[INFO]\tAgainst {len(chunks)} source documents")
+    print(f"[INFO]\tValidating answer {len(answer) if answer else 0} characters")
+    print(f"[INFO]\tAgainst {len(chunks) if chunks else 0} source documents")
     print(f"[INFO]\tRetry Count: {retry_cnt}")
 
     # Edge Case

@@ -33,7 +33,8 @@ class VectorStore:
         """
 
         try:
-            existing_indexes = self.pc.list_indexes()
+            # Get list of existing index names
+            existing_indexes = [index.name for index in self.pc.list_indexes()]
 
             if self.index_name not in existing_indexes:
                 print(f"[INFO]\tCreating new index: {self.index_name}")
@@ -76,7 +77,7 @@ class VectorStore:
 
         print(f"[INFO]\tGenerating Embedding for {len(texts)} documents ...")
 
-        embeddings = self.embedding_service.embed_batch(text)
+        embeddings = self.embedding_service.embed_batch(texts)
 
         # prepare vectors for Pinecone
         vectors = []
@@ -142,7 +143,7 @@ class VectorStore:
                     "id": match.id,
                     "score": match.score,
                     "text": match.metadata.get("text", ""),
-                    "metadata": {k: v for k, v in match.metdata.items() if k != "text"}
+                    "metadata": {k: v for k, v in match.metadata.items() if k != "text"}
                 }
 
                 results.append(result)

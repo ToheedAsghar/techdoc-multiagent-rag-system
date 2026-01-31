@@ -12,11 +12,14 @@ class Settings(BaseSettings):
     Application settings loaded from .env file
     """
 
-    # OpenAI Settings
+    # OpenRouter Settings (for LLM)
     OPENROUTER_API_KEY: str
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_TEMPERATURE: float = 0.1
     OPENAI_MAX_TOKENS: int = 4096
+
+    # OpenAI Settings (for embeddings - OpenRouter doesn't support embeddings)
+    OPENAI_API_KEY: Optional[str] = None
 
     # GEMINI Settings
     GEMINI_API_KEY: str
@@ -24,13 +27,13 @@ class Settings(BaseSettings):
     GEMINI_TEMPERATURE: float = 0.1
     GEMINI_MAX_TOKENS: int = 4096
 
-    # Embeddings Settings
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
-    EMBEDDING_DIMENSIONS: int = 1536
+    # Embeddings Settings (Gemini)
+    EMBEDDING_MODEL: str = "models/text-embedding-004"
+    EMBEDDING_DIMENSIONS: int = 768
 
     # Pinecone Settings
     PINECONE_API_KEY: str
-    PINECONE_ENVIRONMENT: str = "us-east-1-aws"
+    PINECONE_ENVIRONMENT: str = "us-east-1"
     PINECONE_INDEX_NAME: str = "techdoc-intelligence"
     PINECONE_NAMESPACE: str = "default"
     
