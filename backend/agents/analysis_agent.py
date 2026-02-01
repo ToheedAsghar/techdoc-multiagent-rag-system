@@ -61,7 +61,8 @@ def analyze_and_synthesize(state: GraphState) -> Dict:
         context_parts.append(f"{header}\n{chunk['text']}")
 
     # join all with seperators
-    context = "\n" + "="*60 + "\n".join(context_parts)
+    separator = "\n" + "="*60 + "\n"
+    context = separator.join(context_parts)
 
     print(f"[INFO]\tContext Length: {len(context)} characters")
 
