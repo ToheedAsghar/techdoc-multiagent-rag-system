@@ -5,10 +5,8 @@ JOB: Read all Retrieved Documents and Write a Coherent answer.
 """
 
 import time
-from tokenize import TokenError
 from typing import Dict
 
-from pinecone.utils.require_kwargs import P
 from backend.agents.state import GraphState, AgentStep
 from backend.services.llm_client import get_llm_client
 
@@ -115,13 +113,13 @@ def analyze_and_synthesize(state: GraphState) -> Dict:
 
         print(f"[INFO]\tSynthesized Answer: {synthesized_answer[:100]}...")
         print(f"[INFO]\tInformation Gaps: {information_gaps}")
-        print(f"[INFO]\tConfidence: {confidence:.2f}")
+        print(f"[INFO]\tConfidence: {synthesized_confidence:.2f}")
 
     except Exception as e:
         print(f"[ERROR]\tFailed to synthesize answer: {str(e)}")
         synthesized_answer = "I encountered an error while synthesizing your answer. Please try again later."
         information_gaps = ["Error in synthesis process"]
-        confidence = 0.0
+        synthesized_confidence = 0.0
 
     # Quality Check
     if len(synthesized_answer) < 50:

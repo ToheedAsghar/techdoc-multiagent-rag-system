@@ -85,7 +85,7 @@ class TextChunker:
             print(f"[WARNING]\tEmpty text provided. Returning empty chunks.")
             return []
 
-        sentences = self.split_into_sentences(text)
+        sentences = self._split_into_sentence(text)
 
         if not sentences:
             print(f"[WARNING]\tNo sentences found in the text. Returning empty chunks.")

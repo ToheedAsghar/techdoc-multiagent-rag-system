@@ -42,7 +42,7 @@ class DocumentLoader:
 
     def __init__(self):
         self.loaders = {
-            ".pdf": self.load_pdf
+            ".pdf": self._load_pdf
         }
 
         print(f"[INFO]\tDocument Loader Initialized with {len(self.loaders)} loaders.")
@@ -154,19 +154,19 @@ class DocumentLoader:
         """
 
         try:
-            import pyPDF2
+            from pypdf import PdfReader
         except ImportError:
             raise ImportError(
-                "pyPDF2 is not installed. Please install it with 'pip install pypdf2'"
+                "pypdf is not installed. Please install it with 'pip install pypdf'"
             )
         
         content_parts = []
         try:
             with open(path, 'rb') as f:
-                reader = pyPDF2.PdfReader(f)
+                reader = PdfReader(f)
                 
                 # extract text from each page
-                for pg_num in range(len(pdf_reader.pages)):
+                for pg_num in range(len(reader.pages)):
                     page = reader.pages[pg_num]
                     text = page.extract_text()
                     
@@ -184,7 +184,7 @@ class DocumentLoader:
         title = path.stem
         try:
             with open(path,'rb') as f:
-                reader = pyPDF2.PdfReader(f)
+                reader = PdfReader(f)
                 if reader.metadata and reader.metadata.title:
                     title = reader.metadata.title
         except:

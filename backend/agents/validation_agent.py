@@ -44,7 +44,7 @@ def validate_answer(state: GraphState) -> Dict:
             "validation_passed": False,
             "validation_issues": ["Missing answer or source documents"],
             "fact_checked_answer": answer,
-            "retry_cnt": retry_cnt,
+            "retry_cnt": retry_cnt + 1,  # Must increment to avoid infinite loop
             "agent_steps": [
                 AgentStep(
                     agent_name="validation_agent",
@@ -161,9 +161,9 @@ def validate_answer(state: GraphState) -> Dict:
         final_answer = corrected_answer
 
         print(f"[WARNING]\tValidation Failed")
-        print(f"[WARNING]\tUnsupported Claims:{len(unsupported_claims)}")
-        print(f"[WARNING]\tHigh Severity Claims:{len(high_severity_count)}")
-        print(f"[WARNING]\tContradictions:{len(contradictions)}")
+        print(f"[WARNING]\tUnsupported Claims: {len(unsupported_claims)}")
+        print(f"[WARNING]\tHigh Severity Claims: {high_severity_count}")
+        print(f"[WARNING]\tContradictions: {len(contradictions)}")
 
     else:
         final_validation_passed = True

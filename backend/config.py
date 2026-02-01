@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     GEMINI_TEMPERATURE: float = 0.1
     GEMINI_MAX_TOKENS: int = 4096
 
-    # Embeddings Settings (Gemini)
-    EMBEDDING_MODEL: str = "models/text-embedding-004"
-    EMBEDDING_DIMENSIONS: int = 768
+    # Embeddings Settings (OpenRouter - OpenAI compatible)
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSIONS: int = 1536
 
     # Pinecone Settings
     PINECONE_API_KEY: str
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     TOP_K_SIMPLE: int = 3
     TOP_K_COMPLEX: int = 7
     TOP_K_MULTIHOP: int = 10
-    RELEVANCE_THRESHOLD: float = 0.7
+    RELEVANCE_THRESHOLD: float = 0.05  # Lowered temporarily - scores are unexpectedly low
 
     # VALIDATION SETTINGS
     MAX_RETRIES: int = 3

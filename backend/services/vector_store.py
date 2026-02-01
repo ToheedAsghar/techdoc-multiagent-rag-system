@@ -135,9 +135,15 @@ class VectorStore:
                 filter=filter_dict
             )
 
+            # Debug: Show raw results before filtering
+            print(f"[DEBUG]\tPinecone returned {len(response.matches)} matches")
+            for m in response.matches:
+                print(f"[DEBUG]\t  - {m.id}: score={m.score:.3f}")
+
             results = []
             for match in response.matches:
                 if min_score and match.score < min_score:
+                    print(f"[DEBUG]\tFiltered out {match.id} (score {match.score:.3f} < min_score {min_score})")
                     continue
                 result = {
                     "id": match.id,

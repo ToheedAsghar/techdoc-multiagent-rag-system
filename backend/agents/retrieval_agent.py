@@ -87,23 +87,23 @@ def retrieve_documents(state: GraphState) -> Dict:
         print(f"[INFO]\tID: {result['id']}")
         print(f"[INFO]\tTEXT: {result['text'][:100]}...")
 
-        # Quality check
-        if len(retrieved_chunks) == 0:
-            print(f"[WARNING]\tNo documents retrieved. Query may be too broad or unclear.")
-        elif len(retrieved_chunks) < 3:
-            print(f"[WARNING]\tLow document count ({len(retrieved_chunks)}). Consider refining query or lowering min_score threshold.")
+    # Quality check (moved outside the loop)
+    if len(retrieved_chunks) == 0:
+        print(f"[WARNING]\tNo documents retrieved. Query may be too broad or unclear.")
+    elif len(retrieved_chunks) < 3:
+        print(f"[WARNING]\tLow document count ({len(retrieved_chunks)}). Consider refining query or lowering min_score threshold.")
 
-        # log agent step
-        step = AgentStep(
-            name="retrieval_agent",
-            action=f"retrieved {len(retrieved_chunks)} documents",
-            reasoning=f"top_k={top_k} min_score={min_score:.2f} strategy={retrieval_strategy}",
-            timestamp=time.time()
-        )
+    # log agent step
+    step = AgentStep(
+        agent_name="retrieval_agent",
+        action=f"retrieved {len(retrieved_chunks)} documents",
+        reasoning=f"top_k={top_k} min_score={min_score:.2f} strategy={retrieval_strategy}",
+        timestamp=time.time()
+    )
 
-        return {
-            "retrieved_chunks": retrieved_chunks,
-            "retrieval_strategy": retrieval_strategy,
-            "agent_steps": [step]
-        }
+    return {
+        "retrieved_chunks": retrieved_chunks,
+        "retrieval_strategy": retrieval_strategy,
+        "agent_steps": [step]
+    }
         

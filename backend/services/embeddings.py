@@ -1,16 +1,23 @@
 """
 EMBEDDING SERVICE
-Convert Text to Vector Embeddings using Google Gemini.
+Convert Text to Vector Embeddings using OpenRouter (OpenAI-compatible API).
 """
 
 import hashlib
-import google.generativeai as genai
+from openai import OpenAI
 from typing import List, Dict
 from backend.config import settings
 
 class EmbeddingService:
     def __init__(self) -> None:
-        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=settings.OPENROUTER_API_KEY,
+            default_headers={
+                "HTTP-Referer": "https://techdoc-rag-system.local",
+                "X-Title": "TechDoc RAG System"
+            }
+        )
         self.model = settings.EMBEDDING_MODEL
         self.dimension = settings.EMBEDDING_DIMENSIONS
 
@@ -33,13 +40,12 @@ class EmbeddingService:
             return self.cache[cache_key]
         
         try:
-            result = genai.embed_content(
-                model=self.model,
-                content=text,
-                task_type="retrieval_document"
+            result = self.client.embeddings.create(
+                input=[text],
+                model=self.model
             )
 
-            embedding = result['embedding']
+            embedding = result.data[0].embedding
             self.cache[cache_key] = embedding
 
             return embedding
@@ -68,23 +74,22 @@ class EmbeddingService:
         
         if uncached_texts:
             try:
-                # Gemini supports batch embedding
-                BATCH_SIZE = 100  # Gemini batch limit
+                # OpenAI/OpenRouter batch embedding
+                BATCH_SIZE = 100
 
                 for batch_start in range(0, len(uncached_texts), BATCH_SIZE):
                     batch_end = min(batch_start + BATCH_SIZE, len(uncached_texts))
                     batch = uncached_texts[batch_start:batch_end]
                     
-                    result = genai.embed_content(
-                        model=self.model,
-                        content=batch,
-                        task_type="retrieval_document"
+                    result = self.client.embeddings.create(
+                        input=batch,
+                        model=self.model
                     )
 
                     # Store results and update cache
-                    embeddings = result['embedding']
-                    for i, embedding in enumerate(embeddings):
+                    for i, embedding_data in enumerate(result.data):
                         global_idx = uncached_indices[batch_start + i]
+                        embedding = embedding_data.embedding
                         results[global_idx] = embedding
 
                         # Cache this embedding
