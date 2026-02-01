@@ -28,7 +28,7 @@ class Document:
     def __repr__(self) -> str:
         return f"Document(content_length={len(self.content)}, metadata={self.metadata})"
         
-class DocumenLoader:
+class DocumentLoader:
     """
     Loads documents from various file formats.
 
