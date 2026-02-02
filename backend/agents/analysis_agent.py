@@ -61,16 +61,17 @@ def analyze_and_synthesize(state: GraphState) -> Dict:
         context_parts.append(f"{header}\n{chunk['text']}")
 
     # join all with seperators
-    context = "\n" + "="*60 + "\n".join(context_parts)
+    separator = "\n" + "="*60 + "\n"
+    context = separator.join(context_parts)
 
     print(f"[INFO]\tContext Length: {len(context)} characters")
 
     # create synthesis prompt
-    system_prompt = """You are a Expert Technical Writer and Researcher.
-    Your Job is to synthesize information from multiple sources into clear, accurate answers 
-    """
+    system_prompt = """You are an Expert Technical Writer and Researcher.
+    Your job is to synthesize information from multiple sources into clear, accurate answers.
+    Adopt a Chain-of-Thought (CoT) approach: analyze the question, evaluate the sources, and plan your response before writing."""
 
-    user_prompt = f"""Your are answering a user's question using provided source documents.
+    user_prompt = f"""You are answering a user's question using provided source documents.
 
     USER QUESTION:
     {query}
@@ -79,22 +80,21 @@ def analyze_and_synthesize(state: GraphState) -> Dict:
     {context}
 
     INSTRUCTION:
-    1. Write a clear, comprehensive answer to the question
-    2. ONLY use information from the sources provided
-    3. If sources conflict, mention both perspectives
-    4. If sources don't fully answer the question, not what's missing
-    5. Maintain a professional, informative tone
-    6. Keep the answer concise but complete (2-4 paragraphs)
+    1. ANALYSIS: Briefly analyze what the user is asking.
+    2. EVALUATION: Check which sources contain relevant information.
+    3. SYNTHESIS: Combine information to answer the question.
+    4. CITATION: Cite your sources for every key claim (e.g., [Source 1]).
 
     IMPORTANT RULES:
-    - DO NOT make up information not in the sources
-    - DO NOT add your own knowledge beyound the sources
-    - DO NOT ignore low-scoring scores - they may still hve useful info
-    - DO cite which source(s) support each claim (e.g., "According to Source 1...")
+    - DO NOT make up information not in the sources.
+    - DO NOT add your own knowledge beyond the sources.
+    - If sources conflict, mention both perspectives.
+    - If sources don't fully answer the question, note what's missing.
 
     RESPOND in JSON FORMAT:
     {{
-        "answer": "Your Synthesized Answer here",
+        "thought_process": "Brief analysis of the question and plan",
+        "answer": "Your comprehensive answer here",
         "information_gaps": ["list", "of", "missing", "information"],
         "confidence": 0.0-1.0
     }}"""

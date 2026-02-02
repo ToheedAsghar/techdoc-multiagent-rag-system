@@ -8,6 +8,7 @@ from __future__ import print_function
 from calendar import prmonth
 import time
 from typing import Dict, List
+from backend.config import settings
 from backend.agents.state import GraphState, AgentStep
 from backend.services.llm_client import get_llm_client
 
@@ -65,7 +66,7 @@ def validate_answer(state: GraphState) -> Dict:
 
     # validation prompt
     system_prompt = """You are a Rigorous Fact-Checker for a RAG system.
-    Your Job is to verify that every claim in teh answer is supported by the provided sources.
+    Your Job is to verify that every claim in the answer is supported by the provided sources.
     You must be strict - if a claim is not explicitly stated in the sources, it's a hallucination.
     """
 
@@ -110,7 +111,7 @@ def validate_answer(state: GraphState) -> Dict:
             }}
         ],
         "contradictions": ["list of any contradictions found"],
-        "corrected_answer": "If validation fails, provide a corrected version that only uses supported claims."
+        "corrected_answer": "If validation fails, provide a corrected version that only uses supported claims.",
         "confidence": 0.0-1.0
     }}
     """
@@ -176,11 +177,11 @@ def validate_answer(state: GraphState) -> Dict:
             print(f"[INFO]\tMinor Validation Issues Noted: {len(validation_issues)}")
 
     
-    will_retry = not final_validation_passed and retry_cnt < 2;
+    will_retry = not final_validation_passed and retry_cnt < settings.MAX_RETRIES
 
     if will_retry:
         print(f"[INFO]\tWill Retry Retrieval (attempt {retry_cnt+1})")
-    elif not validation_passed:
+    elif not final_validation_passed:
         print(f"[INFO]\tMAX retries reached. Returning to corrected answer.")
     else:
         print(f"[INFO]\tValidation Passed. No Retry Needed.")
