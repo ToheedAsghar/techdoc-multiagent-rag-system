@@ -22,6 +22,7 @@ def retrieve_documents(state: GraphState) -> Dict:
     """
 
     query = state["query"]
+    search_query = state.get("search_query", query) # Use optimized query if available
     query_type = state["query_type"]
     retry_cnt = state["retry_cnt"]
 
@@ -57,12 +58,14 @@ def retrieve_documents(state: GraphState) -> Dict:
         print(f"[INFO]\tMin Score: {min_score}")
         print(f"[INFO]\tTop K: {top_k}")
 
-    print(f"[INFO]\tRetrieving {top_k} documents for query: {query[:50]}...")
+    print(f"[INFO]\tRetrieving {top_k} documents for query: {search_query[:50]}...")
+    if search_query != query:
+        print(f"[INFO]\t(Optimized from original: {query[:50]}...)")
 
     vector_store = get_vector_store()
     try:
         raw_results = vector_store.search(
-            query=query,
+            query=search_query,
             top_k=top_k,
             min_score=min_score
         )

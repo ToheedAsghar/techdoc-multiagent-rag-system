@@ -22,10 +22,15 @@ def router_query(state: GraphState) -> Dict:
     print(f"Routing Agent")
     print(f"{'='*60}")
 
-    system_prompt = """You are an expert Query Classifier for a RAG system. Your Job is to analyze queries and classify their complexity"""
+    system_prompt = """You are an expert Search Optimization Specialist and Query Classifier.
+    Your job is to analyze user queries, classify their complexity, and generate an optimized search query for a vector database."""
+
     user_prompt = f"""
-        Analyze this query and classify its complexity:
-        Query: "{query}"
+        Analyze this query and perform two tasks:
+        1. Classify its complexity.
+        2. Generate an optimized keyword-based search query (remove stop words, expand acronyms, focus on entities).
+
+        User Query: "{query}"
 
         Classification Categories:
         1. SIMPLE_LOOKUP
@@ -46,8 +51,9 @@ def router_query(state: GraphState) -> Dict:
         Respond in JSON Format:
         {{
             "query_type": "SIMPLE_LOOKUP" | "COMPLEX_REASONING" | "MULTI_HOP",
+            "search_query": "Optimized keyword search string",
             "confidence": 0.0-1.0,
-            "reasoning": "Breif explanation of why you chose this classification"
+            "reasoning": "Brief explanation of why you chose this classification"
         }}
     """
 
@@ -60,18 +66,21 @@ def router_query(state: GraphState) -> Dict:
         )
 
         query_type = response.get("query_type", "COMPLEX_REASONING")
+        search_query = response.get("search_query", query)
         confidence = response.get("confidence", 0.5)
         reasoning = response.get("reasoning", "No reasoning provided")
 
     except Exception as e:
         print(f"[ROUTING ERROR]\t{str(e)}")
         query_type = "COMPLEX_REASONING"
+        search_query = query
         confidence = 0.5
         reasoning = "Error in classification logic, using Default."
     
     query_type = query_type.lower().replace(" ", "_")
 
     print(f"Query Type:\t{query_type}")
+    print(f"Search Query:\t{search_query}")
     print(f"Confidence:\t{confidence:.2f}")
     print(f"Reasoning:\t{reasoning}")
 
@@ -79,12 +88,13 @@ def router_query(state: GraphState) -> Dict:
     step = AgentStep(
         agent_name="routing_agent",
         action=f"classified as {query_type}",
-        reasoning=reasoning,
+        reasoning=f"{reasoning} | Search Query: {search_query}",
         timestamp=time.time()
     )
 
     return {
         "query_type": query_type,
+        "search_query": search_query,
         "confidence": confidence,
         "agent_steps": [step]
     }

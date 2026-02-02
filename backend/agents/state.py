@@ -32,6 +32,7 @@ class GraphState(TypedDict):
     query: str
 
     # Routing Section
+    search_query: str  # Optimized query for retrieval
     query_type: str
     confidence: float
 
