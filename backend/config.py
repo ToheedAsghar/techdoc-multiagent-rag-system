@@ -12,7 +12,10 @@ class Settings(BaseSettings):
     Application settings loaded from .env file
     """
 
-    # OpenRouter Settings (for LLM)
+    # LLM Provider Selection: "gemini" or "gpt"
+    LLM_PROVIDER: str = "gpt"
+
+    # OpenRouter Settings (for GPT LLM)
     OPENROUTER_API_KEY: str
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_TEMPERATURE: float = 0.1

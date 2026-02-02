@@ -45,12 +45,9 @@ class DocumentLoader:
             ".pdf": self._load_pdf
         }
 
-        print(f"[INFO]\tDocument Loader Initialized with {len(self.loaders)} loaders.")
-
     def load_directory(self, dir_path: str, recursive: bool = True) -> List[Document]:
         """
-
-        "Load all documents from a directory.
+        Load all documents from a directory.
 
         PROCESS:
         1. Scan the directory for supported files

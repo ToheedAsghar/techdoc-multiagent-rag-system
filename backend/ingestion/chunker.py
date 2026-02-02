@@ -134,6 +134,7 @@ class TextChunker:
         # WHY: Need to track which chunk came from which document
         
         text_chunks = []
+        n: int = len(chunks)
         
         for i, chunk_text in enumerate(chunks):
             # Create metadata for this specific chunk
@@ -148,7 +149,7 @@ class TextChunker:
                 text=chunk_text,
                 metadata=chunk_metadata,
                 chunk_index=i,
-                total_chunks=len(chunks)
+                total_chunks=n
             )
             
             text_chunks.append(text_chunk)

@@ -40,10 +40,10 @@ def main():
     print("✅ Environment variables found\n")
     
     # ========== STEP 2: Get Resume Folder Path ==========
-    resume_folder = input("Enter the path to your resume folder (or press Enter for './resume_folder'): ").strip()
+    resume_folder = input("Enter the path to your resume folder (or press Enter for './documents'): ").strip()
     
     if not resume_folder:
-        resume_folder = "./sample_docs"
+        resume_folder = "./documents"
     
     resume_path = Path(resume_folder)
     
@@ -93,7 +93,7 @@ def main():
     
     # Sample questions about resume
     test_questions = [
-        "Write a summary of the document.",
+        # "Write a summary of the document.",
         # "What programming languages do I know?",
         # "What is my work experience?",
         # "What projects have I worked on?",
@@ -158,7 +158,7 @@ def main():
                 print(f"   Confidence: {result.get('confidence', 'N/A')}")
                 print(f"   Documents Retrieved: {len(result['retrieved_chunks'])}")
                 print(f"   Validation: {'PASSED' if result['validation_passed'] else 'FAILED'}")
-                print(f"   Retry Count: {result['retry_count']}")
+                # print(f"   Retry Count: {result['retry_count']}")
                 print(f"   Total Latency: {result['latency_ms']:.0f}ms")
                 print(f"   Tokens Used: {result.get('total_tokens_used', 'N/A')}")
                 
