@@ -24,3 +24,6 @@ pypdf>=5.0.0
 
 # ENV
 python-dotenv>=1.0.0
+
+# Redis
+redis>=5.0.0

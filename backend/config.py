@@ -53,6 +53,11 @@ class Settings(BaseSettings):
     # Application Settings
     API_V1_PREFIX: str = "/api/v1"
 
+    # Redis Cache Settings
+    REDIS_URL: str = 'redis://localhost:6379'
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_SECONDS: int = 3600 # 1 hour
+
     class Config:
         env_file = ".env"
         case_sensitive = True

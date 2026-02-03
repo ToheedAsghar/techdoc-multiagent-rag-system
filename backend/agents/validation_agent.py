@@ -5,7 +5,7 @@ JOB: Verify that the synthesized answer is supported by the source documents.
 """
 
 from __future__ import print_function
-from calendar import prmonth
+
 import time
 from typing import Dict, List
 from backend.config import settings
