@@ -10,7 +10,6 @@ STRATEGY:
 4. namespace: 'query': prefix for organization
 """
 
-from ast import Delete
 import json
 import redis
 import hashlib
@@ -44,7 +43,7 @@ class CacheService:
                 settings.REDIS_URL,
                 decode_responses = True,
                 socket_connect_timeout = 2, # don't wait too long
-                sock_timeout = 2
+                socket_timeout = 2
             )
 
             # test connection
@@ -129,7 +128,7 @@ class CacheService:
         try:
             key = self._generate_key(query)
             ttl = ttl or settings.CACHE_TTL_SECONDS
-            result_cpy = [k: v for k,v in result.items() if k.starts_with('_')]
+            result_cpy = {k: v for k,v in result.items() if not k.startswith('_')}
 
             # serialize to JSON
             json_data = json.dumps(result_cpy)

@@ -63,10 +63,26 @@ def create_graph():
     compiled_graph = graph.compile()
     return compiled_graph
 
-def run_graph(query: str) -> GraphState:
+def run_graph(query: str, user_id: str = None, use_cache: bool = True) -> GraphState:
     """
-    EXECUTE THE COMPLETE WORKFLOW FOR THE QUERY
+    EXECUTE THE COMPLETE WORKFLOW FOR THE QUERY WITH CACHE
     """
+
+    if use_cache:
+        from backend.services.cache import get_cache_service
+
+        cache = get_cache_service()
+        result = cache.get(query)
+
+        if result:
+            print(f"[INFO]\tReturning cached result for: {query[:50]}...")
+            print(f"[INFO]\tSkipping workflow execution.")
+
+            result['_from_cache'] = True
+            result['query'] = query
+            return result
+
+    print(f"[INFO]\tNo cached result found. Running workflow...")
 
     INITIAL_STATE = GraphState(
         query=query,
@@ -88,6 +104,16 @@ def run_graph(query: str) -> GraphState:
 
     final_state['latency_ms'] = latency_ms
     final_state['total_tokens_used'] = llm.get_token_usage()
+
+    if use_cache:
+        cache = get_cache_service()
+        print(f"[INFO]\tCaching result...")
+
+        if final_state.get('validation_passed', False) or final_state.get('retry_cnt', 0) >= settings.MAX_RETRIES - 1:
+            print(f"[INFO]\tValidation passed. Caching result...")
+            cache.set(query, dict(final_state))
+        else:
+            print(f"[INFO]\tValidation failed. Not caching result.")
 
     print(f"[INFO]\tWorkflow Completed in {latency_ms:.2f}ms")
     print(f"[INFO]\tTotal Tokens Used: {final_state['total_tokens_used']}")
