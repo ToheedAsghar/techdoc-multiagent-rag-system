@@ -14,10 +14,13 @@ class GeminiModel:
     Wrapper for Google Gemini API calls using the new google-genai SDK.
     """
 
-    def __init__(self):
-        # Create client with API key
+    def __init__(self, model_override: Optional[str] = None):
+        """
+        Args:
+            model_override: Override the default model name
+        """
         self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        self.model_name = settings.GEMINI_MODEL
+        self.model_name = model_override or settings.GEMINI_MODEL
         self.temperature = settings.GEMINI_TEMPERATURE
         self.max_tokens = settings.GEMINI_MAX_TOKENS
         self.total_tokens_used = 0
@@ -29,10 +32,7 @@ class GeminiModel:
         temperature: Optional[float] = None,
         json_mode: bool = False
     ) -> str:
-        """
-        Synchronous text generation using Gemini.
-        """
-        # Build the full prompt with system instruction
+        """Synchronous text generation using Gemini."""
         full_prompt = ""
         if system_prompt:
             full_prompt = f"{system_prompt}\n\n"
@@ -42,7 +42,6 @@ class GeminiModel:
             full_prompt += "\n\nRespond with valid JSON only."
 
         try:
-            # Build generation config
             config = types.GenerateContentConfig(
                 temperature=temperature if temperature is not None else self.temperature,
                 max_output_tokens=self.max_tokens,
@@ -54,7 +53,6 @@ class GeminiModel:
                 config=config
             )
 
-            # Track token usage if available
             if hasattr(response, 'usage_metadata') and response.usage_metadata:
                 self.total_tokens_used += getattr(response.usage_metadata, 'total_token_count', 0)
 
@@ -70,10 +68,7 @@ class GeminiModel:
         temperature: Optional[float] = None,
         json_mode: bool = False
     ) -> str:
-        """
-        Asynchronous text generation using Gemini.
-        """
-        # Build the full prompt with system instruction
+        """Asynchronous text generation using Gemini."""
         full_prompt = ""
         if system_prompt:
             full_prompt = f"{system_prompt}\n\n"
@@ -83,13 +78,11 @@ class GeminiModel:
             full_prompt += "\n\nRespond with valid JSON only."
 
         try:
-            # Build generation config
             config = types.GenerateContentConfig(
                 temperature=temperature if temperature is not None else self.temperature,
                 max_output_tokens=self.max_tokens,
             )
 
-            # Use the async client
             async_client = genai.Client(api_key=settings.GEMINI_API_KEY)
             response = await async_client.aio.models.generate_content(
                 model=self.model_name,
@@ -97,7 +90,6 @@ class GeminiModel:
                 config=config
             )
 
-            # Track token usage if available
             if hasattr(response, 'usage_metadata') and response.usage_metadata:
                 self.total_tokens_used += getattr(response.usage_metadata, 'total_token_count', 0)
 

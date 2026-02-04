@@ -8,7 +8,7 @@ import time
 from typing import Dict
 
 from backend.agents.state import GraphState, AgentStep
-from backend.services.llm_client import get_llm_client
+from backend.services.llm_client import get_analysis_client
 
 def analyze_and_synthesize(state: GraphState) -> Dict:
     """
@@ -99,7 +99,7 @@ def analyze_and_synthesize(state: GraphState) -> Dict:
         "confidence": 0.0-1.0
     }}"""
 
-    llm = get_llm_client()
+    llm = get_analysis_client()
 
     try:
         response = llm.generate_json(

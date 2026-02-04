@@ -21,14 +21,20 @@ class Settings(BaseSettings):
     OPENAI_TEMPERATURE: float = 0.1
     OPENAI_MAX_TOKENS: int = 4096
 
-    # OpenAI Settings (for embeddings - OpenRouter doesn't support embeddings)
+    # OpenAI Settings (for embeddings)
     OPENAI_API_KEY: Optional[str] = None
 
-    # GEMINI Settings
-    GEMINI_API_KEY: str
-    GEMINI_MODEL: str = "gemini-2.5-flash"
-    GEMINI_TEMPERATURE: float = 0.1
-    GEMINI_MAX_TOKENS: int = 4096
+    # GPT - Task-Specific Models
+    GPT_API_KEY: Optional[str] = None  # Falls back to OPENROUTER_API_KEY if not set
+    GPT_ROUTING_MODEL: str = 'gpt-4o-mini'
+    GPT_ANALYSIS_MODEL: str = 'gpt-4o-mini'
+    GPT_VALIDATION_MODEL: str = 'gpt-4o-mini'
+
+    # GEMINI - Task-Specific Models
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_ROUTING_MODEL: str = 'gemini-2.0-flash-lite'
+    GEMINI_ANALYSIS_MODEL: str = 'gemini-2.5-flash'
+    GEMINI_VALIDATION_MODEL: str = 'gemini-2.5-flash'
 
     # Embeddings Settings (OpenRouter - OpenAI compatible)
     EMBEDDING_MODEL: str = "text-embedding-3-small"
@@ -44,7 +50,7 @@ class Settings(BaseSettings):
     TOP_K_SIMPLE: int = 3
     TOP_K_COMPLEX: int = 7
     TOP_K_MULTIHOP: int = 10
-    RELEVANCE_THRESHOLD: float = 0.05  # Lowered temporarily - scores are unexpectedly low
+    RELEVANCE_THRESHOLD: float = 0.05 
 
     # VALIDATION SETTINGS
     MAX_RETRIES: int = 3

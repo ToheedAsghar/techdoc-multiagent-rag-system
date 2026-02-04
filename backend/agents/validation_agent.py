@@ -10,7 +10,7 @@ import time
 from typing import Dict, List
 from backend.config import settings
 from backend.agents.state import GraphState, AgentStep
-from backend.services.llm_client import get_llm_client
+from backend.services.llm_client import get_validation_client
 
 def validate_answer(state: GraphState) -> Dict:
     """
@@ -117,7 +117,7 @@ def validate_answer(state: GraphState) -> Dict:
     """
 
     # execute validation
-    llm = get_llm_client()
+    llm = get_validation_client()
     try:
         response = llm.generate_json(
             prompt=user_prompt,

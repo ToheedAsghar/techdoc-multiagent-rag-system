@@ -7,19 +7,23 @@ Automatically selects provider based on configuration.
 import json
 import re
 from backend.config import settings
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Literal
 
 from backend.services.gemini_model import GeminiModel
 from backend.services.gpt_model import GPTModel
 
+TaskType = Literal["routing", "analysis", "validation", "general"]
 
 class LLMClient:
     """
-    Unified wrapper for LLM API calls.
-    Supports both Gemini and GPT providers based on configuration.
+    Unified interface for LLM Providers (Gemini and GPT).
+    Automatically selects provider based on configuration.
     """
 
-    def __init__(self, provider: Optional[str] = None):
+    def __init__(
+        self,
+        provider: Optional[str] = None,
+        task: TaskType = 'general'):
         """
         Initialize the LLM client.
         
@@ -28,7 +32,17 @@ class LLMClient:
                      If None, uses the LLM_PROVIDER setting.
         """
         self.provider = provider or settings.LLM_PROVIDER
+        self.task = task
         self.total_tokens_used = 0
+
+        # get specific model
+        model_override = self._get_task_model(task)
+        if self.provider.lower() == 'gemini':
+            self._model = GeminiModel(model_override=model_override)
+        elif self.provider.lower() == 'gpt':
+            self._model = GPTModel(model_override=model_override)
+        else:
+            raise ValueError(f"Unknown LLM provider: {self.provider}. Use 'gemini' or 'gpt'.")
 
         # Initialize the appropriate model based on provider
         if self.provider.lower() == "gemini":
@@ -39,6 +53,24 @@ class LLMClient:
             raise ValueError(f"Unknown LLM provider: {self.provider}. Use 'gemini' or 'gpt'.")
 
         print(f"[LLM CLIENT]\tInitialized with provider: {self.provider}")
+
+    def _get_task_model(self, task:  TaskType) -> Optional[str]:
+        """Get the model name for a specific task."""
+        if self.provider.lower() == 'gemini':
+            model_map = {
+                'routing': settings.GEMINI_ROUTING_MODEL,
+                'analysis': settings.GEMINI_ANALYSIS_MODEL,
+                'validation': settings.GEMINI_VALIDATION_MODEL,
+                'general': None
+            }
+        else:
+            model_map = {
+                'routing': settings.GPT_ROUTING_MODEL,
+                'analysis': settings.GPT_ANALYSIS_MODEL,
+                'validation': settings.GPT_VALIDATION_MODEL,
+                'general': None
+            }
+        return model_map.get(task)
 
     def generate(
         self, 
@@ -189,37 +221,30 @@ class LLMClient:
 _llm_clients: Dict[str, LLMClient] = {}
 
 
-def get_llm_client(provider: Optional[str] = None) -> LLMClient:
+def get_llm_client(provider: Optional[str] = None, task: TaskType = 'general') -> LLMClient:
     """
     Get or create the LLM client instance.
-    
-    Args:
-        provider: Optional provider override ("gemini" or "gpt").
-                 If None, uses the LLM_PROVIDER setting.
-    
-    Returns:
-        LLMClient instance for the specified provider.
     """
     global _llm_clients
     
     # Determine which provider to use
     provider_key = (provider or settings.LLM_PROVIDER).lower()
+    cache_key = f"{provider_key}_{task}"
+
+    if cache_key not in _llm_clients:
+        _llm_clients[cache_key] = LLMClient(provider=provider_key, task=task)
     
-    if provider_key not in _llm_clients:
-        _llm_clients[provider_key] = LLMClient(provider=provider_key)
-    
-    return _llm_clients[provider_key]
+    return _llm_clients[cache_key]
 
+def get_routing_client() -> LLMClient:
+    """Get LLM client optimized for routing/classification."""
+    return get_llm_client(task="routing")
 
-def get_gemini_client() -> LLMClient:
-    """
-    Convenience function to get the Gemini client.
-    """
-    return get_llm_client(provider="gemini")
+def get_analysis_client() -> LLMClient:
+    """Get LLM client optimized for analysis/synthesis."""
+    return get_llm_client(task="analysis")
 
+def get_validation_client() -> LLMClient:
+    """Get LLM client optimized for validation/fact-checking."""
+    return get_llm_client(task="validation")
 
-def get_gpt_client() -> LLMClient:
-    """
-    Convenience function to get the GPT client.
-    """
-    return get_llm_client(provider="gpt")

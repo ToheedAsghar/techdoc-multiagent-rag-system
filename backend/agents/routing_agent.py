@@ -9,7 +9,7 @@ Looks at the user query and determines how complex it is.
 import time
 from typing import Dict
 from backend.agents.state import GraphState, AgentStep
-from backend.services.llm_client import get_llm_client
+from backend.services.llm_client import get_routing_client
 
 def router_query(state: GraphState) -> Dict:
     """
@@ -57,7 +57,7 @@ def router_query(state: GraphState) -> Dict:
         }}
     """
 
-    llm = get_llm_client();
+    llm = get_routing_client();
 
     try:
         response = llm.generate_json(
