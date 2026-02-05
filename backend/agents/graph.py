@@ -84,7 +84,13 @@ def skip_validation_node(state: GraphState) -> dict:
         "agent_steps": [step]
     }
 
+_compiled_graph = None
+
 def create_graph():
+    global _compiled_graph
+    if _compiled_graph is not None:
+        return _compiled_graph
+
     graph = StateGraph(GraphState)
 
     # add nodes
@@ -114,8 +120,8 @@ def create_graph():
         "RETRIEVER_NODE": "RETRIEVER_NODE"
     })
 
-    compiled_graph = graph.compile()
-    return compiled_graph
+    _compiled_graph = graph.compile()
+    return _compiled_graph
 
 def run_graph(query: str, user_id: str = None, use_cache: bool = True) -> GraphState:
     """
